@@ -2,22 +2,24 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { signIn, signOut, getProviders } from 'next-auth/react';
+import { signIn, signOut, getProviders, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 const Header = () => {
-    const isUserLoggedIn = true;
+    const isUserLoggedIn = false;
+    const { data: session } = useSession();
+    // const { teste } = data;
     const [providers, setProviders] = useState(null);
     const [toggleDropdown, setToggleDropdown] = useState(false)
 
     useEffect(() => {
-        const setProviders1 = async () => {
+        const setUpProviders = async () => {
             const response = await getProviders();
 
             setProviders(response);
         }
 
-        setProviders1();
+        setUpProviders();
     }, [])
 
     return (
@@ -26,7 +28,7 @@ const Header = () => {
             
             {/* Desktop Navigation */}
             <div className="sm:flex hidden">
-                {isUserLoggedIn ? ( 
+                {session?.user ? ( 
                     <div className='flex gap-3 md:gap-5'>
                         <Link href="/create-post"
                             className="">
@@ -41,25 +43,30 @@ const Header = () => {
                             className="">
                                 Profile
                         </Link>
+                        <p>{session?.user?.id}</p>
                     </div>
                 ): (
                     <>
-                        {providers && 
-                            Object.values(providers).map((provider) => {
+                    {providers && 
+                            Object.values(providers).map((provider) => (
                                 <button
                                     type="button"
                                     key={provider.name}
                                     onClick={() => signIn(provider.id)}>
                                         Sign in
                                 </button>
-                            })}
+                            )
+                        )
+                    }
                     </>
                 )}
             </div>
 
+            {console.log(providers)}
+
             {/* Mobile Navigation */}
             <div className="sm:hidden flex relative">
-                {isUserLoggedIn ? (
+                {session?.user ? (
                     <div className="flex">
                         <Image src="/next.svg"
                             width={37}
@@ -97,14 +104,16 @@ const Header = () => {
                 ): (
                     <>
                     {providers && 
-                            Object.values(providers).map((provider) => {
+                            Object.values(providers).map((provider) => (
                                 <button
                                     type="button"
                                     key={provider.name}
                                     onClick={() => signIn(provider.id)}>
                                         Sign in
                                 </button>
-                            })}
+                            )
+                        )
+                    }
                     </>
                 )}
             </div>
